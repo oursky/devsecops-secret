@@ -2,12 +2,16 @@
 
 ARGS_IN=
 ARGS_OUT=.env
+ARGS_KEYWORD=GENERATE_SECRET
 
 function usage {
-    echo "usage: generate-secret.sh -i .env.in [-o .env]"
+    echo "usage: generate-secret.sh -i .env.in [-o .env] [-k keyword]"
+    echo "  -i .env.in     Input template file"
+    echo "  -o .env        Output file, default to .env"
+    echo "  -k keyword     Keyword for secret, default to GENERATE_SECRET"
 }
 function parse_arguments {
-    while getopts "hi:o:" opt; do
+    while getopts "hi:o:k:" opt; do
         case ${opt} in
         h)
             usage
@@ -15,6 +19,9 @@ function parse_arguments {
             ;;
         i)
             ARGS_IN=$OPTARG
+            ;;
+        k)
+            ARGS_KEYWORD=$OPTARG
             ;;
         o)
             ARGS_OUT=$OPTARG
@@ -25,6 +32,7 @@ function parse_arguments {
 function generate_secret {
     local INFILE=$1
     local OUTFILE=$2
+    local KEYWORD=$3
     local TMPFILE="${OUTFILE}.tmp"
 
     touch "${TMPFILE}"
@@ -35,7 +43,7 @@ function generate_secret {
         elif [[ ${LINE} = *"="* ]]; then
             KEY=${LINE%%=*}
             VALUE=${LINE#*=}
-            if [[ ${VALUE} = *"GENERATE_SECRET"* ]]; then
+            if [[ ${VALUE} = *"${KEYWORD}"* ]]; then
                 echo "${LINE}" >> "${TMPFILE}"
             else
                 if [ -f "${OUTFILE}" ]; then
@@ -54,12 +62,12 @@ function generate_secret {
         fi
     done < ${INFILE}
     # Substitute secrets
-    for i in $(seq 1 $(grep -c -e "GENERATE_SECRET\[.*\]" "${TMPFILE}")); do \
-        NAME=$(grep -o -m1 -e "GENERATE_SECRET\[.*\]" "${TMPFILE}"  | sed -n "s/GENERATE_SECRET\[\(.*\)\]/\1/p"); \
-        sed -i "s/GENERATE_SECRET\[${NAME}\]/$(openssl rand -base64 48 | sed -e 's/[\/|=|+]//g')/g" "$TMPFILE"; \
+    for i in $(seq 1 $(grep -c -e "${KEYWORD}\[.*\]" "${TMPFILE}")); do \
+        NAME=$(grep -o -m1 -e "${KEYWORD}\[.*\]" "${TMPFILE}"  | sed -n "s/${KEYWORD}\[\(.*\)\]/\1/p"); \
+        sed -i "s/${KEYWORD}\[${NAME}\]/$(openssl rand -base64 48 | sed -e 's/[\/|=|+]//g')/g" "$TMPFILE"; \
     done;
-    for i in $(seq 1 $(grep -c GENERATE_SECRET "$TMPFILE")); do \
-        sed -i "0,/GENERATE_SECRET/s/GENERATE_SECRET/$(openssl rand -base64 48 | sed -e 's/[\/|=|+]//g')/" "$TMPFILE"; \
+    for i in $(seq 1 $(grep -c ${KEYWORD} "$TMPFILE")); do \
+        sed -i "0,/${KEYWORD}/s/${KEYWORD}/$(openssl rand -base64 48 | sed -e 's/[\/|=|+]//g')/" "$TMPFILE"; \
     done;
     # backup
     if [ -f "${OUTFILE}" ]; then
@@ -70,11 +78,11 @@ function generate_secret {
 function main {
     echo "== Secret Generator =="
     parse_arguments $@
-    if [[ "${ARGS_IN}" = "" || "${ARGS_OUT}" = "" ]]; then
+    if [[ "${ARGS_IN}" = "" || "${ARGS_OUT}" = "" || "${ARGS_KEYWORD}" = "" ]]; then
         usage
         exit 0
     fi
-    generate_secret "${ARGS_IN}" "${ARGS_OUT}"
+    generate_secret "${ARGS_IN}" "${ARGS_OUT}" "${ARGS_KEYWORD}"
 }
 
 main $@
