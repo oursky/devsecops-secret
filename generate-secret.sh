@@ -10,7 +10,8 @@ function usage {
     echo "  -i .env.in     Input template file, default to stdin"
     echo "  -o .env        Output file, default to stdout"
     echo "  -k keyword     Keyword for secret, default to GENERATE_SECRET"
-    echo "  -s strength    Secret strength, default 48 bytes before base64, might be less due to removing special characters."
+    echo "  -s strength    Secret strength, default 48 bytes before base64."
+    echo "                 Note: might be less due to removing special characters."
 }
 function parse_arguments {
     while getopts "hi:o:k:s:" opt; do
@@ -66,7 +67,7 @@ function generate_secret {
         else
             echo "${LINE}" >> "${TMPFILE}"
         fi
-    done < ${INFILE}
+    done < "${INFILE}"
     # Substitute secrets
     for i in $(seq 1 $(grep -c -e "${KEYWORD}\[.*\]" "${TMPFILE}")); do \
         NAME=$(grep -o -m1 -e "${KEYWORD}\[.*\]" "${TMPFILE}"  | sed -n "s/${KEYWORD}\[\(.*\)\]/\1/p"); \
@@ -76,12 +77,14 @@ function generate_secret {
         sed -i.bak "0,/${KEYWORD}/s/${KEYWORD}/$(openssl rand -base64 ${STRENGTH} | sed -e 's/[\/|=|+]//g')/" "$TMPFILE"; \
     done;
     rm -f "$TMPFILE.bak"
-    # backup
-    if [ -f "${OUTFILE}" ]; then
-        cp -f "${OUTFILE}" "${OUTFILE}.bak"
-        mv "${TMPFILE}" "${OUTFILE}"
-    else
+    if [ -z ${OUTFILE} ]; then
         cat "${TMPFILE}" && rm -f "${TMPFILE}"
+    else
+        # backup
+        if [ -f "${OUTFILE}" ]; then
+            cp -f "${OUTFILE}" "${OUTFILE}.bak"
+        fi
+        mv "${TMPFILE}" "${OUTFILE}"
     fi
 }
 function main {
@@ -95,9 +98,8 @@ function main {
     fi
     generate_secret "${ARGS_IN}" "${ARGS_OUT}" "${ARGS_KEYWORD}" "${ARGS_SECRET_LENGTH}"
     if [ ! -z ${ARGS_OUT} ]; then
-        echo "Generated secret if strength ${ARGS_SECRET_LENGTH}."
+        echo "Generated secret of strength ${ARGS_SECRET_LENGTH}."
     fi
-
 }
 
 main $@
