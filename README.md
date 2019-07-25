@@ -18,6 +18,20 @@ curl -s https://raw.githubusercontent.com/oursky/devsecops-secret/master/generat
   -i .env.example -o .env
 ```
 
+##### Makefile (make secret)
+Your Makefile would contain:
+```
+.PHONY: lint build test run clean secret
+
+secret:
+    @curl -s https://raw.githubusercontent.com/oursky/devsecops-secret/master/generate-secret.sh \
+      | bash -s -- \
+      -i .env.example -o .env
+
+lint:
+    ...
+```
+
 ##### Advanced Usage
 ```
 ./generate-secret.sh -h
