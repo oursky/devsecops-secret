@@ -3,15 +3,17 @@
 ARGS_IN=
 ARGS_OUT=.env
 ARGS_KEYWORD=GENERATE_SECRET
+ARGS_SECRET_LENGTH=48
 
 function usage {
-    echo "usage: generate-secret.sh -i .env.in [-o .env] [-k keyword]"
+    echo "usage: generate-secret.sh -i .env.in [-o .env] [-k keyword] [-s strength]"
     echo "  -i .env.in     Input template file"
     echo "  -o .env        Output file, default to .env"
     echo "  -k keyword     Keyword for secret, default to GENERATE_SECRET"
+    echo "  -s strength    Secret strength, default 48 bytes before base64, might be less due to removing special characters."
 }
 function parse_arguments {
-    while getopts "hi:o:k:" opt; do
+    while getopts "hi:o:k:s:" opt; do
         case ${opt} in
         h)
             usage
@@ -23,6 +25,9 @@ function parse_arguments {
         k)
             ARGS_KEYWORD=$OPTARG
             ;;
+        s)
+            ARGS_SECRET_LENGTH=$OPTARG
+            ;;
         o)
             ARGS_OUT=$OPTARG
             ;;
@@ -33,6 +38,7 @@ function generate_secret {
     local INFILE=$1
     local OUTFILE=$2
     local KEYWORD=$3
+    local STRENGTH=$4
     local TMPFILE="${OUTFILE}.tmp"
 
     touch "${TMPFILE}"
@@ -64,10 +70,10 @@ function generate_secret {
     # Substitute secrets
     for i in $(seq 1 $(grep -c -e "${KEYWORD}\[.*\]" "${TMPFILE}")); do \
         NAME=$(grep -o -m1 -e "${KEYWORD}\[.*\]" "${TMPFILE}"  | sed -n "s/${KEYWORD}\[\(.*\)\]/\1/p"); \
-        sed -i "s/${KEYWORD}\[${NAME}\]/$(openssl rand -base64 48 | sed -e 's/[\/|=|+]//g')/g" "$TMPFILE"; \
+        sed -i "s/${KEYWORD}\[${NAME}\]/$(openssl rand -base64 ${STRENGTH} | sed -e 's/[\/|=|+]//g')/g" "$TMPFILE"; \
     done;
     for i in $(seq 1 $(grep -c ${KEYWORD} "$TMPFILE")); do \
-        sed -i "0,/${KEYWORD}/s/${KEYWORD}/$(openssl rand -base64 48 | sed -e 's/[\/|=|+]//g')/" "$TMPFILE"; \
+        sed -i "0,/${KEYWORD}/s/${KEYWORD}/$(openssl rand -base64 ${STRENGTH} | sed -e 's/[\/|=|+]//g')/" "$TMPFILE"; \
     done;
     # backup
     if [ -f "${OUTFILE}" ]; then
@@ -78,11 +84,11 @@ function generate_secret {
 function main {
     echo "== Secret Generator =="
     parse_arguments $@
-    if [[ "${ARGS_IN}" = "" || "${ARGS_OUT}" = "" || "${ARGS_KEYWORD}" = "" ]]; then
+    if [ -z ${ARGS_IN} ] || [ -z ${ARGS_OUT} ] || [ -z ${ARGS_KEYWORD} ] || [ -z ${ARGS_SECRET_LENGTH} ]; then
         usage
         exit 0
     fi
-    generate_secret "${ARGS_IN}" "${ARGS_OUT}" "${ARGS_KEYWORD}"
+    generate_secret "${ARGS_IN}" "${ARGS_OUT}" "${ARGS_KEYWORD}" "${ARGS_SECRET_LENGTH}"
 }
 
 main $@
