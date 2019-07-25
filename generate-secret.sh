@@ -66,7 +66,7 @@ function generate_secret {
         else
             echo "${LINE}" >> "${TMPFILE}"
         fi
-    done < ${INFILE}
+    done < "${INFILE}"
     # Substitute secrets
     for i in $(seq 1 $(grep -c -e "${KEYWORD}\[.*\]" "${TMPFILE}")); do \
         NAME=$(grep -o -m1 -e "${KEYWORD}\[.*\]" "${TMPFILE}"  | sed -n "s/${KEYWORD}\[\(.*\)\]/\1/p"); \
@@ -77,8 +77,10 @@ function generate_secret {
     done;
     rm -f "$TMPFILE.bak"
     # backup
-    if [ -f "${OUTFILE}" ]; then
-        cp -f "${OUTFILE}" "${OUTFILE}.bak"
+    if [ -z ${OUTFILE} ]; then
+        if [ -f "${OUTFILE}" ]; then
+            cp -f "${OUTFILE}" "${OUTFILE}.bak"
+        fi
         mv "${TMPFILE}" "${OUTFILE}"
     else
         cat "${TMPFILE}" && rm -f "${TMPFILE}"
