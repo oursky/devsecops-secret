@@ -22,9 +22,9 @@ curl -s https://raw.githubusercontent.com/oursky/devsecops-secret/master/generat
 ```
 ./generate-secret.sh -h
 
-usage: generate-secret.sh -i .env.in [-o .env] [-k keyword] [-s strength]
-  -i .env.in     Input template file
-  -o .env        Output file, default to .env
+usage: generate-secret.sh [-i infile] [-o outfile] [-k keyword] [-s strength]
+  -i infile      Input template file, default to stdin
+  -o outfile     Output file, default to stdout
   -k keyword     Keyword for secret, default to GENERATE_SECRET
   -s strength    Secret strength, default 48 bytes before base64, might be less due to removing special characters.
 ```
