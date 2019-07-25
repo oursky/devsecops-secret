@@ -70,11 +70,12 @@ function generate_secret {
     # Substitute secrets
     for i in $(seq 1 $(grep -c -e "${KEYWORD}\[.*\]" "${TMPFILE}")); do \
         NAME=$(grep -o -m1 -e "${KEYWORD}\[.*\]" "${TMPFILE}"  | sed -n "s/${KEYWORD}\[\(.*\)\]/\1/p"); \
-        sed -i "s/${KEYWORD}\[${NAME}\]/$(openssl rand -base64 ${STRENGTH} | sed -e 's/[\/|=|+]//g')/g" "$TMPFILE"; \
+        sed -i.bak "s/${KEYWORD}\[${NAME}\]/$(openssl rand -base64 ${STRENGTH} | sed -e 's/[\/|=|+]//g')/g" "$TMPFILE"; \
     done;
     for i in $(seq 1 $(grep -c ${KEYWORD} "$TMPFILE")); do \
-        sed -i "0,/${KEYWORD}/s/${KEYWORD}/$(openssl rand -base64 ${STRENGTH} | sed -e 's/[\/|=|+]//g')/" "$TMPFILE"; \
+        sed -i.bak "0,/${KEYWORD}/s/${KEYWORD}/$(openssl rand -base64 ${STRENGTH} | sed -e 's/[\/|=|+]//g')/" "$TMPFILE"; \
     done;
+    rm -f "$TMPFILE.bak"
     # backup
     if [ -f "${OUTFILE}" ]; then
         cp -f "${OUTFILE}" "${OUTFILE}.bak"
