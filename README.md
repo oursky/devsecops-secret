@@ -48,7 +48,8 @@ usage: generate-secret.sh [-k keyword] [-s strength] [file1.in [file1.out]] [fil
 This script will assume the secret to be located on a .env style file, which can be consumed directly by:
 1. dotenv
 2. docker (e.g. `docker run -it --rm --env-file .env my-image`)
-3. kubernetes (e.g. `kubectl -n ns create secret generic app-secret --from-env-file=.env`)
+3. docker-compose (`.env` file is automatically loaded)
+4. kubernetes (e.g. `kubectl -n ns create secret generic app-secret --from-env-file=.env`)
 
 An .env.example will looks like this:
 ```
