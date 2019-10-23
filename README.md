@@ -8,14 +8,14 @@
 
 ## Usage
 ```
-./generate-secret.sh -i .env.example -o .env
+./generate-secret.sh .env.example .env
 ```
 
 ##### Pull & Run
 ```
 curl -s https://raw.githubusercontent.com/oursky/devsecops-secret/master/generate-secret.sh \
   | bash -s -- \
-  -i .env.example -o .env
+  .env.example .env
 ```
 
 ##### Makefile (make secret)
@@ -26,7 +26,7 @@ Your Makefile would contain:
 secret:
     @curl -s https://raw.githubusercontent.com/oursky/devsecops-secret/master/generate-secret.sh \
       | bash -s -- \
-      -i .env.example -o .env
+      .env.example .env
 
 lint:
     ...
@@ -36,12 +36,12 @@ lint:
 ```
 ./generate-secret.sh -h
 
-usage: generate-secret.sh -i .env.in [-o .env] [-k keyword] [-s strength]
-  -i .env.in     Input template file, default to stdin
-  -o .env        Output file, default to stdout
-  -k keyword     Keyword for secret, default to GENERATE_SECRET
-  -s strength    Secret strength, default 48 bytes before base64.
-                 Note: might be less due to removing special characters.
+usage: generate-secret.sh [-k keyword] [-s strength] [file1.in [file1.out]] [file2.in [file2.out]]
+  -k keyword   Keyword for secret, default to GENERATE_SECRET
+  -s strength  Secret strength, default 48 bytes before base64.
+               Note: might be less due to removing special characters.
+  file.in      Input template file, if no input specified, default to stdin
+  file.out     Output file, default to stdout
 ```
 
 ## Use Case
