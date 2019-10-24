@@ -6,6 +6,23 @@
 2. Generate secret with decent strength.
 3. Avoid everyone reinventing it.
 
+## Known Problem
+mac's bash is ancient and do not support associative array. (see [this]()).
+If you encount this:
+```
+./generate-secret.sh: line 3: declare: -A: invalid option
+declare: usage: declare [-afFirtx] [-p] [name[=value] ...]
+```
+Try upgrading bash:
+```
+brew unlink bash
+brew update && brew install bash
+```
+and run command with `bash` prefix:
+```
+bash ./generate-secret.sh (arguments...)
+```
+
 ## Usage
 ```
 ./generate-secret.sh .env.example .env
