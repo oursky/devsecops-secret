@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
-declare -A ARGS_INOUT
-declare -A SECRET_POOL
+ARGS_INOUT=()
+SECRET_POOL=()
 ARGS_STDOUT=false
 ARGS_KEYWORD=GENERATE_SECRET
 ARGS_SECRET_LENGTH=48
@@ -34,7 +34,7 @@ function parse_arguments {
     done
     shift $(expr $OPTIND - 1 )
     while test $# -gt 0; do
-        ARGS_INOUT[$1]=$2
+        ARGS_INOUT+=("$1::$2")
         if [ -z $2 ]; then
             ARGS_STDOUT=true
             shift
@@ -45,8 +45,10 @@ function parse_arguments {
     if [ ${#ARGS_INOUT[@]} -eq 0 ]; then
         ARGS_INOUT["/dev/stdin"]=""
     fi
-    for key in "${!ARGS_INOUT[@]}"; do
-        echo "[I] Input: $key -> ${ARGS_INOUT[$key]}";
+    for key in "${ARGS_INOUT[@]}"; do
+        local infile="${key%%::*}"
+        local outfile="${key##*::}"    
+        echo "[I] Input: ${infile} -> ${outfile}";
     done
 }
 function generate_secret {
@@ -113,8 +115,10 @@ function main {
     if [ "${ARGS_STDOUT}" != "true" ]; then
         echo "== Secret Generator =="
     fi
-    for key in "${!ARGS_INOUT[@]}"; do
-        generate_secret "${key}" "${ARGS_INOUT[$key]}" "${ARGS_KEYWORD}" "${ARGS_SECRET_LENGTH}"
+    for key in "${ARGS_INOUT[@]}"; do
+        local infile="${key%%::*}"
+        local outfile="${key##*::}"
+        generate_secret "${infile}" "${outfile}" "${ARGS_KEYWORD}" "${ARGS_SECRET_LENGTH}"
     done
     if [ "${ARGS_STDOUT}" != "true" ]; then
         echo "Generated secret of strength ${ARGS_SECRET_LENGTH}."
