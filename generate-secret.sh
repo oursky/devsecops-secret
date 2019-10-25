@@ -18,7 +18,7 @@ function usage {
 function parse_arguments {
     local ARGS_IN=""
     local ARGS_OUT=""
-    while getopts "hi:o:k:s:" opt; do
+    while getopts "hk:s:" opt; do
         case ${opt} in
         h)
             usage
