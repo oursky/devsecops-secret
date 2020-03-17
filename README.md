@@ -38,8 +38,7 @@ lint:
 
 usage: generate-secret.sh [-k keyword] [-s strength] [file1.in [file1.out]] [file2.in [file2.out]]
   -k keyword   Keyword for secret, default to GENERATE_SECRET
-  -s strength  Secret strength, default 48 bytes before base64.
-               Note: might be less due to removing special characters.
+  -s strength  Secret length, default to 48.
   file.in      Input template file, if no input specified, default to stdin
   file.out     Output file, default to stdout
 ```
