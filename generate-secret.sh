@@ -10,8 +10,7 @@ ARGS_SECRET_LENGTH=48
 function usage {
     echo "usage: generate-secret.sh [-k keyword] [-s strength] [file1.in [file1.out]] [file2.in [file2.out]]"
     echo "  -k keyword   Keyword for secret, default to GENERATE_SECRET"
-    echo "  -s strength  Secret strength, default 48 bytes before base64."
-    echo "               Note: might be less due to removing special characters."
+    echo "  -s strength  Secret length, default to 48."
     echo "  file.in      Input template file, if no input specified, default to stdin"
     echo "  file.out     Output file, default to stdout"
 }
@@ -97,13 +96,13 @@ function generate_secret {
         done
 
         if [ -z ${SAVED_SECRET} ]; then
-            SAVED_SECRET="$(openssl rand -base64 ${STRENGTH} | sed -e 's/[\/|=|+]//g')"
+            SAVED_SECRET="$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c ${STRENGTH})"
             SECRET_POOL+=("${NAME}::${SAVED_SECRET}")
         fi
         sed -i.bak "s/${KEYWORD}\[${NAME}\]/${SAVED_SECRET}/g" "${TMPFILE}"; \
     done;
     for i in $(seq 1 $(grep -c ${KEYWORD} "$TMPFILE")); do \
-        sed -i.bak -e "/${KEYWORD}/{s//$(openssl rand -base64 ${STRENGTH} | sed -e 's/[\/|=|+]//g')/;:a" -e '$!N;$!ba' -e '}' "${TMPFILE}"; \
+        sed -i.bak -e "/${KEYWORD}/{s//$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c ${STRENGTH})/;:a" -e '$!N;$!ba' -e '}' "${TMPFILE}"; \
     done;
     rm -f "$TMPFILE.bak"
     if [ -z ${OUTFILE} ]; then
