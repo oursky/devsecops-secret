@@ -13,7 +13,7 @@
 
 ##### Pull & Run
 ```
-curl -s https://raw.githubusercontent.com/oursky/devsecops-secret/master/generate-secret.sh \
+curl -s https://raw.githubusercontent.com/oursky/devsecops-secret/v1.0/generate-secret.sh \
   | bash -s -- \
   .env.example .env
 ```
@@ -24,7 +24,7 @@ Your Makefile would contain:
 .PHONY: lint build test run clean secret
 
 secret:
-    @curl -s https://raw.githubusercontent.com/oursky/devsecops-secret/master/generate-secret.sh \
+    @curl -s https://raw.githubusercontent.com/oursky/devsecops-secret/v1.0/generate-secret.sh \
       | bash -s -- \
       .env.example .env
 
